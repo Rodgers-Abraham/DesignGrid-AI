@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import '../../data/models/project.dart';
 
 abstract class ProjectsEvent extends Equatable {
   @override

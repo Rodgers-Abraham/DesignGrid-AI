@@ -22,7 +22,6 @@ class AppTheme {
         primary: AppColors.primaryAmber,
         secondary: AppColors.accentAmber,
         surface: AppColors.surface,
-        background: AppColors.background,
         error: AppColors.error,
       ),
       textTheme: _getTextTheme(base).apply(
@@ -31,9 +30,7 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -64,7 +61,6 @@ class AppTheme {
         primary: AppColors.primaryAmber,
         secondary: AppColors.accentAmber,
         surface: Colors.white,
-        background: Color(0xFFF8F9FA),
         error: AppColors.error,
       ),
       textTheme: _getTextTheme(base),
