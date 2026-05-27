@@ -4,6 +4,8 @@ import 'core/theme/app_theme.dart';
 import 'logic/theme/theme_bloc.dart';
 import 'logic/theme/theme_state.dart';
 import 'logic/canvas/canvas_bloc.dart';
+import 'logic/projects/projects_bloc.dart';
+import 'logic/projects/projects_event.dart';
 import 'core/app_router.dart';
 
 void main() {
@@ -20,6 +22,7 @@ class DesignGridApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => ThemeBloc()),
         BlocProvider(create: (context) => CanvasBloc()),
+        BlocProvider(create: (context) => ProjectsBloc()..add(LoadProjectsEvent())),
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, state) {

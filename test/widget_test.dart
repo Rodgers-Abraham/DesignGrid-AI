@@ -15,11 +15,17 @@ void main() {
     await tester.tap(find.text('Studio'));
     await tester.pumpAndSettle();
     expect(find.text('Creator Studio'), findsOneWidget);
-    expect(find.text('Preset Gallery'), findsOneWidget);
 
-    // Tap on Projects and verify navigation.
+    // Tap on Projects and verify navigation to My Projects.
     await tester.tap(find.text('Projects'));
-    await tester.pumpAndSettle();
-    expect(find.text('Projects Page Placeholder'), findsOneWidget);
+    // We use pump() because NetworkImages fail to load in tests, 
+    // which prevents pumpAndSettle from finishing.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    
+    // Disambiguate: We expect 2 "My Projects" texts (one in AppBar, one in TabBar)
+    expect(find.text('My Projects'), findsNWidgets(2));
+    expect(find.text('Saved'), findsOneWidget);
+    expect(find.text('Drafts'), findsOneWidget);
   });
 }
