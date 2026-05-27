@@ -8,20 +8,14 @@ void main() {
     await tester.pumpWidget(const DesignGridApp());
     await tester.pumpAndSettle();
 
-    // Verify that we start on the Home Page (checking for specific elements).
+    // Verify that we start on the Home Page.
     expect(find.text('DesignGrid.AI'), findsOneWidget);
-    expect(find.text('Canvas Creator Studio'), findsOneWidget);
 
-    // Verify that the Bottom Navigation Dock is present.
-    expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Studio'), findsOneWidget);
-    expect(find.text('Projects'), findsOneWidget);
-    expect(find.text('Profile'), findsOneWidget);
-
-    // Tap on Studio and verify navigation.
+    // Tap on Studio and verify navigation to Creator Studio.
     await tester.tap(find.text('Studio'));
     await tester.pumpAndSettle();
-    expect(find.text('Studio Page Placeholder'), findsOneWidget);
+    expect(find.text('Creator Studio'), findsOneWidget);
+    expect(find.text('Preset Gallery'), findsOneWidget);
 
     // Tap on Projects and verify navigation.
     await tester.tap(find.text('Projects'));

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/app_theme.dart';
 import 'logic/theme/theme_bloc.dart';
 import 'logic/theme/theme_state.dart';
+import 'logic/canvas/canvas_bloc.dart';
 import 'core/app_router.dart';
 
 void main() {
@@ -15,8 +16,11 @@ class DesignGridApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ThemeBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => ThemeBloc()),
+        BlocProvider(create: (context) => CanvasBloc()),
+      ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
         builder: (context, state) {
           return MaterialApp.router(
