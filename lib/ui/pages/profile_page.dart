@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../logic/theme/theme_bloc.dart';
 import '../../logic/theme/theme_event.dart';
 import '../../logic/theme/theme_state.dart';
+import '../../logic/auth/auth_bloc.dart';
+import '../../logic/auth/auth_event.dart';
+import '../../logic/auth/auth_state.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -42,7 +46,7 @@ class ProfilePage extends StatelessWidget {
             _buildAccountCard(),
             const SizedBox(height: 32),
             _buildSectionHeader('Security'),
-            _buildSecurityCard(),
+            _buildSecurityCard(context),
             const SizedBox(height: 32),
             _buildSectionHeader('Preferences'),
             _buildPreferencesCard(context),
@@ -86,7 +90,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSecurityCard() {
+  Widget _buildSecurityCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -98,7 +102,9 @@ class ProfilePage extends StatelessWidget {
         children: [
           Expanded(
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: () {
+                context.read<AuthBloc>().add(SignOutEvent());
+              },
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: Colors.white.withOpacity(0.1)),
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -115,7 +121,11 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Account deletion requested. Verification email sent.')),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error.withOpacity(0.15),
                 foregroundColor: AppColors.error,
@@ -164,6 +174,7 @@ class ProfilePage extends StatelessWidget {
             'Help Center',
             icon: Icons.help_outline,
             hasSwitch: false,
+            onTap: () => context.push('/help'),
           ),
         ],
       ),
@@ -190,40 +201,45 @@ class ProfilePage extends StatelessWidget {
     bool switchValue = false,
     String? trailingText,
     ValueChanged<bool>? onChanged,
+    VoidCallback? onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 20, color: AppColors.textSecondary),
-            const SizedBox(width: 12),
-          ],
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-          const Spacer(),
-          if (trailingText != null) ...[
-            Text(
-              trailingText,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 20, color: AppColors.textSecondary),
+              const SizedBox(width: 12),
+            ],
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+            const Spacer(),
+            if (trailingText != null) ...[
+              Text(
+                trailingText,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
+              const SizedBox(width: 8),
+            ],
+            if (hasSwitch)
+              CupertinoSwitch(
+                value: switchValue,
+                activeColor: AppColors.primaryAmber,
+                onChanged: onChanged ?? (val) {},
+              )
+            else
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
           ],
-          if (hasSwitch)
-            CupertinoSwitch(
-              value: switchValue,
-              activeTrackColor: AppColors.primaryAmber,
-              onChanged: onChanged ?? (val) {},
-            )
-          else
-            const Icon(
-              Icons.chevron_right,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
-        ],
+        ),
       ),
     );
   }

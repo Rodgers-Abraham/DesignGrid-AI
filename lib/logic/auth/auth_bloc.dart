@@ -25,5 +25,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ToggleBioAuthEvent>((event, emit) {
       emit(state.copyWith(bioAuthEnabled: !state.bioAuthEnabled));
     });
+
+    on<LoginEvent>((event, emit) {
+      emit(state.copyWith(isAuthenticated: true));
+    });
+
+    on<SignOutEvent>((event, emit) {
+      emit(state.copyWith(isAuthenticated: false));
+    });
   }
 }

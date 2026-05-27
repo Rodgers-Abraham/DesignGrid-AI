@@ -56,16 +56,19 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+      scaffoldBackgroundColor: AppColors.backgroundLight,
       colorScheme: const ColorScheme.light(
         primary: AppColors.primaryAmber,
         secondary: AppColors.accentAmber,
-        surface: Colors.white,
+        surface: AppColors.surfaceLight,
         error: AppColors.error,
       ),
-      textTheme: _getTextTheme(base),
+      textTheme: _getTextTheme(base).apply(
+        bodyColor: AppColors.textPrimaryLight,
+        displayColor: AppColors.textPrimaryLight,
+      ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: AppColors.surfaceLight,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.grey.shade200),

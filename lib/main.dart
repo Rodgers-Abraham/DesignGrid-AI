@@ -6,6 +6,8 @@ import 'logic/theme/theme_state.dart';
 import 'logic/canvas/canvas_bloc.dart';
 import 'logic/projects/projects_bloc.dart';
 import 'logic/projects/projects_event.dart';
+import 'logic/auth/auth_bloc.dart';
+import 'logic/auth/auth_event.dart';
 import 'core/app_router.dart';
 
 void main() {
@@ -23,13 +25,14 @@ class DesignGridApp extends StatelessWidget {
         BlocProvider(create: (context) => ThemeBloc()),
         BlocProvider(create: (context) => CanvasBloc()),
         BlocProvider(create: (context) => ProjectsBloc()..add(LoadProjectsEvent())),
+        BlocProvider(create: (context) => AuthBloc()..add(LoadSettingsEvent())),
       ],
       child: BlocBuilder<ThemeBloc, ThemeState>(
-        builder: (context, state) {
+        builder: (context, themeState) {
           return MaterialApp.router(
             title: 'DesignGrid.AI',
             debugShowCheckedModeBanner: false,
-            themeMode: state.themeMode,
+            themeMode: themeState.themeMode,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             routerConfig: AppRouter.router,

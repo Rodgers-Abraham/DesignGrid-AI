@@ -13,3 +13,10 @@ class DeleteProjectEvent extends ProjectsEvent {
   @override
   List<Object?> get props => [projectId];
 }
+
+class SearchProjectsEvent extends ProjectsEvent {
+  final String query;
+  SearchProjectsEvent(this.query);
+  @override
+  List<Object?> get props => [query];
+}

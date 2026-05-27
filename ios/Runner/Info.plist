@@ -51,6 +51,10 @@
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+	<key>NSCameraUsageDescription</key>
+	<string>DesignGrid.AI needs camera access to capture photos for your designs.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>DesignGrid.AI needs photo library access to import images for your designs.</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>

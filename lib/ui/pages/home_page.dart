@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../core/theme/app_colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../logic/projects/projects_bloc.dart';
+import '../../logic/projects/projects_event.dart';
+import '../widgets/app_logo.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,17 +22,14 @@ class _HomePageState extends State<HomePage> {
   final List<Map<String, String>> _projects = [
     {
       'title': 'Luxury Floral wedding Invitation',
-      'subtitle': '10s display',
       'image': 'https://placeholder.com/600x400',
     },
     {
       'title': 'Retro neo poster',
-      'subtitle': '10s display',
       'image': 'https://placeholder.com/600x400',
     },
     {
       'title': 'Minimal corporate business card',
-      'subtitle': '10s display',
       'image': 'https://placeholder.com/600x400',
     },
   ];
@@ -83,71 +85,70 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryAmber,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.grid_view_rounded, color: Colors.black),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'DesignGrid.AI',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
-              ),
+              const AppLogo(size: 36),
               const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryAmber.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primaryAmber.withOpacity(0.3)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.workspace_premium, color: AppColors.primaryAmber, size: 16),
-                    SizedBox(width: 4),
-                    Text(
-                      'PRO',
-                      style: TextStyle(
-                        color: AppColors.primaryAmber,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('DesignGrid PRO'),
+                      content: const Text('Unlock unlimited AI generation, premium templates, and cloud sync. Coming soon!'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Awesome')),
+                      ],
                     ),
-                  ],
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryAmber.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.primaryAmber.withOpacity(0.3)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.workspace_premium, color: AppColors.primaryAmber, size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        'PRO',
+                        style: TextStyle(
+                          color: AppColors.primaryAmber,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
             ),
-            child: Row(
-              children: [
-                Icon(Icons.search, color: AppColors.textSecondary, size: 20),
-                const SizedBox(width: 12),
-                Text(
-                  'Search projects...',
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
-              ],
+            child: TextField(
+              onChanged: (val) => context.read<ProjectsBloc>().add(SearchProjectsEvent(val)),
+              decoration: InputDecoration(
+                icon: Icon(Icons.search, color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight, size: 20),
+                hintText: 'Search projects...',
+                hintStyle: TextStyle(color: isDark ? AppColors.textSecondary : AppColors.textSecondaryLight),
+                border: InputBorder.none,
+              ),
             ),
           ),
         ],
@@ -213,39 +214,11 @@ class _HomePageState extends State<HomePage> {
                             bottom: 24,
                             left: 24,
                             right: 24,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _projects[index]['title']!,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _projects[index]['subtitle']!,
-                                  style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Positioned(
-                            top: 16,
-                            right: 16,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                '10s',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                            child: Text(
+                              _projects[index]['title']!,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -289,7 +262,7 @@ class _HomePageState extends State<HomePage> {
             child: _QuickActionTile(
               title: 'Canvas Creator Studio',
               icon: Icons.edit_note_rounded,
-              onTap: () {},
+              onTap: () => context.push('/studio'),
             ),
           ),
           const SizedBox(width: 16),
@@ -297,7 +270,7 @@ class _HomePageState extends State<HomePage> {
             child: _QuickActionTile(
               title: 'Your Saved Projects',
               icon: Icons.folder_open_rounded,
-              onTap: () {},
+              onTap: () => context.push('/projects'),
             ),
           ),
         ],

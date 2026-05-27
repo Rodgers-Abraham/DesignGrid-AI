@@ -4,6 +4,8 @@ import '../ui/pages/home_page.dart';
 import '../ui/pages/studio_page.dart';
 import '../ui/pages/projects_page.dart';
 import '../ui/pages/profile_page.dart';
+import '../ui/pages/welcome_page.dart';
+import '../ui/pages/help_center_page.dart';
 import '../ui/shell/app_shell.dart';
 
 class AppRouter {
@@ -11,8 +13,16 @@ class AppRouter {
   
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: '/welcome', // Start at welcome for new session
     routes: [
+      GoRoute(
+        path: '/welcome',
+        builder: (context, state) => const WelcomePage(),
+      ),
+      GoRoute(
+        path: '/help',
+        builder: (context, state) => const HelpCenterPage(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);

@@ -15,3 +15,7 @@ class UpdateApiKeyLibraryEvent extends AuthEvent {
 }
 
 class ToggleBioAuthEvent extends AuthEvent {}
+
+class LoginEvent extends AuthEvent {}
+
+class SignOutEvent extends AuthEvent {}
