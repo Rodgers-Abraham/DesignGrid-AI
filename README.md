@@ -1,17 +1,53 @@
-# designgrid_ai
+# DesignGrid.AI 🎨✨
 
-A new Flutter project.
+**DesignGrid.AI** is a premium, AI-augmented design studio application built with Flutter. It combines high-end aesthetic design with powerful generative capabilities to provide a seamless creative workflow for professionals.
 
-## Getting Started
+## 🌟 Vision
+To empower designers with an ultra-fluid interface that bridges the gap between manual precision and AI-driven inspiration.
 
-This project is a starting point for a Flutter application.
+## 🛠️ Key Features
 
-A few resources to get you started if this is your first Flutter project:
+### 1. The Hub (Home)
+- **3D Stacked Carousel:** An automated 10-second cycling deck showcasing project drafts with smooth perspective transforms.
+- **Quick Access Hub:** Instant entry points to the Creator Studio and project archives.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### 2. Creator Studio
+- **Hybrid Canvas:** Seamlessly toggle between **Manual Editing** and **AI Co-pilot Mode**.
+- **Gemini Integration:** Generate high-fidelity designs using multimodal prompts powered by Google AI Studio.
+- **Multi-Format Presets:** Optimized layouts for Business Cards, Promo Posters, Web Banners, and more.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 3. Project Terminal
+- **Local Persistence:** Designs are stored locally with metadata overlays.
+- **Responsive Grid:** Fast access to drafts and saved projects.
+
+### 4. Identity Terminal (Me Page)
+- **Premium UI:** A high-end operating system terminal-style interface for account management.
+- **Dynamic Theming:** Instant switching between Dark (Matte Black/Amber) and Light modes.
+
+## 🏗️ Technical Implementation
+
+### Core Stack
+- **Framework:** Flutter (Multi-platform)
+- **State Management:** BLoC / Cubit for predictable data flow.
+- **Navigation:** GoRouter with `StatefulShellRoute` to maintain canvas state across tabs.
+- **Logic:** Multimodal AI integration via Gemini API.
+- **Security:** AES-encrypted local storage for API keys using `flutter_secure_storage`.
+
+### Design System
+- **Background:** Ultra-deep charcoal/matte black (#0D0E12).
+- **Accents:** Bright Amber (#FFC72C) and Yellow (#FFB800).
+- **Typography:** Google Fonts (Inter).
+- **Shapes:** Consistent 12px to 16px corner radii for a modern container-based feel.
+
+---
+
+## 🚀 Development Phases
+
+- [x] **Phase 1: Scaffolding** - Core architecture and theme setup.
+- [x] **Phase 2: Navigation** - Multi-tab shell and stateful routing.
+- [x] **Phase 3: Logic** - Implementation of BLoC states and secure storage.
+- [ ] **Phase 4: UI Development** - High-fidelity screen implementation (In Progress).
+- [ ] **Phase 5: Validation** - Final security audit and performance optimization.
+
+---
+Built with ❤️ by the Gemini CLI.

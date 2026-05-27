@@ -8,8 +8,9 @@ void main() {
     await tester.pumpWidget(const DesignGridApp());
     await tester.pumpAndSettle();
 
-    // Verify that we start on the Home Page.
-    expect(find.text('Home Page Placeholder'), findsOneWidget);
+    // Verify that we start on the Home Page (checking for specific elements).
+    expect(find.text('DesignGrid.AI'), findsOneWidget);
+    expect(find.text('Canvas Creator Studio'), findsOneWidget);
 
     // Verify that the Bottom Navigation Dock is present.
     expect(find.text('Home'), findsOneWidget);
