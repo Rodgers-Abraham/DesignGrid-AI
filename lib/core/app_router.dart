@@ -19,22 +19,6 @@ class AppRouter {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/',
     refreshListenable: _BlocRefreshListenable(authBloc),
-    redirect: (context, state) {
-      final isAuthenticated = authBloc.state.isAuthenticated;
-      final isLoggingIn = state.matchedLocation == '/login' || 
-                          state.matchedLocation == '/signup' || 
-                          state.matchedLocation == '/welcome';
-
-      if (!isAuthenticated) {
-        return isLoggingIn ? null : '/welcome';
-      }
-
-      if (isLoggingIn) {
-        return '/';
-      }
-
-      return null;
-    },
     routes: [
       GoRoute(
         path: '/welcome',

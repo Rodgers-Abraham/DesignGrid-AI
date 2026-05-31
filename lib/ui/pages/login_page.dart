@@ -73,12 +73,22 @@ class _LoginPageState extends State<LoginPage> {
                   height: 56,
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<AuthBloc>().add(LoginEvent());
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+                      if (email.isNotEmpty && password.isNotEmpty) {
+                        context.read<AuthBloc>().add(LoginEvent(
+                              email: email,
+                              password: password,
+                            ));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please enter email and password')),
+                        );
+                      }
                     },
                     child: const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
-                ),
-                const SizedBox(height: 24),
+                ),                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

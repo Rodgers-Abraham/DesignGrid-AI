@@ -4,6 +4,7 @@ import '../../core/theme/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/projects/projects_bloc.dart';
 import '../../logic/projects/projects_event.dart';
+import '../../logic/auth/auth_bloc.dart';
 import '../widgets/app_logo.dart';
 import 'package:go_router/go_router.dart';
 
@@ -262,7 +263,13 @@ class _HomePageState extends State<HomePage> {
             child: _QuickActionTile(
               title: 'Canvas Creator Studio',
               icon: Icons.edit_note_rounded,
-              onTap: () => context.push('/studio'),
+              onTap: () {
+                if (context.read<AuthBloc>().state.isAuthenticated) {
+                  context.push('/studio');
+                } else {
+                  context.push('/welcome');
+                }
+              },
             ),
           ),
           const SizedBox(width: 16),
@@ -270,7 +277,13 @@ class _HomePageState extends State<HomePage> {
             child: _QuickActionTile(
               title: 'Your Saved Projects',
               icon: Icons.folder_open_rounded,
-              onTap: () => context.push('/projects'),
+              onTap: () {
+                if (context.read<AuthBloc>().state.isAuthenticated) {
+                  context.push('/projects');
+                } else {
+                  context.push('/welcome');
+                }
+              },
             ),
           ),
         ],

@@ -16,7 +16,22 @@ class UpdateApiKeyLibraryEvent extends AuthEvent {
 
 class ToggleBioAuthEvent extends AuthEvent {}
 
-class LoginEvent extends AuthEvent {}
+class LoginEvent extends AuthEvent {
+  final String email;
+  final String password;
+
+  LoginEvent({required this.email, required this.password});
+
+  @override
+  List<Object?> get props => [email, password];
+}
+
+class AuthStateChangedEvent extends AuthEvent {
+  final bool isAuthenticated;
+  AuthStateChangedEvent(this.isAuthenticated);
+  @override
+  List<Object?> get props => [isAuthenticated];
+}
 
 class SignOutEvent extends AuthEvent {}
 

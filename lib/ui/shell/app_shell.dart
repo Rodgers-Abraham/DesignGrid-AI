@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/theme/app_colors.dart';
+import '../../logic/auth/auth_bloc.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({
@@ -17,10 +19,21 @@ class AppShell extends StatelessWidget {
       extendBody: true,
       bottomNavigationBar: _StyledFloatingDock(
         currentIndex: navigationShell.currentIndex,
-        onTap: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
+        onTap: (index) {
+          if (index == 0) {
+            navigationShell.goBranch(0, initialLocation: true);
+            return;
+          }
+
+          if (context.read<AuthBloc>().state.isAuthenticated) {
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          } else {
+            context.push('/welcome');
+          }
+        },
       ),
     );
   }
