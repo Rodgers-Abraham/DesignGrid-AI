@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_colors.dart';
 import '../../logic/theme/theme_bloc.dart';
 import '../../logic/theme/theme_event.dart';
@@ -15,43 +16,52 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Me Page',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.only(right: 24),
-              child: Text(
-                'Account Settings',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+    final user = FirebaseAuth.instance.currentUser;
+
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (!state.isAuthenticated) {
+          context.go('/welcome');
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Me Page',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.only(right: 24),
+                child: Text(
+                  'Account Settings',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
               ),
             ),
-          ),
-        ],
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-            _buildSectionHeader('Account'),
-            _buildAccountCard(),
-            const SizedBox(height: 32),
-            _buildSectionHeader('Security'),
-            _buildSecurityCard(context),
-            const SizedBox(height: 32),
-            _buildSectionHeader('Preferences'),
-            _buildPreferencesCard(context),
-            const SizedBox(height: 120), // Spacer for floating dock
           ],
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 12),
+              _buildSectionHeader('Account'),
+              _buildAccountCard(user),
+              const SizedBox(height: 32),
+              _buildSectionHeader('Security'),
+              _buildSecurityCard(context),
+              const SizedBox(height: 32),
+              _buildSectionHeader('Preferences'),
+              _buildPreferencesCard(context),
+              const SizedBox(height: 120), // Spacer for floating dock
+            ],
+          ),
         ),
       ),
     );
@@ -71,7 +81,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildAccountCard() {
+  Widget _buildAccountCard(User? user) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -80,9 +90,9 @@ class ProfilePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildInfoRow('Email', 'designgrid@ai.com'),
+          _buildInfoRow('Email', user?.email ?? 'N/A'),
           _buildDivider(),
-          _buildInfoRow('Name', 'Design Grid User'),
+          _buildInfoRow('Name', user?.displayName ?? 'N/A'),
           _buildDivider(),
           _buildActionRow('Change Password', hasSwitch: true),
         ],

@@ -35,6 +35,8 @@ class AuthStateChangedEvent extends AuthEvent {
 
 class SignOutEvent extends AuthEvent {}
 
+class ClearErrorEvent extends AuthEvent {}
+
 class CreateAccountEvent extends AuthEvent {
   final String name;
   final String email;

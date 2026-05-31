@@ -25,7 +25,11 @@ class AuthBloc extends Bloc<AuthEvent, local.AuthState> {
     });
 
     on<AuthStateChangedEvent>((event, emit) {
-      emit(state.copyWith(isAuthenticated: event.isAuthenticated));
+      emit(state.copyWith(isAuthenticated: event.isAuthenticated, errorMessage: null));
+    });
+
+    on<ClearErrorEvent>((event, emit) {
+      emit(state.copyWith(errorMessage: null));
     });
 
     on<LoadSettingsEvent>((event, emit) async {
@@ -50,25 +54,26 @@ class AuthBloc extends Bloc<AuthEvent, local.AuthState> {
     });
 
     on<LoginEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(isLoading: true, errorMessage: null));
       try {
         await _auth.signInWithEmailAndPassword(
           email: event.email,
           password: event.password,
         );
+      } on FirebaseAuthException catch (e) {
+        emit(state.copyWith(isLoading: false, errorMessage: e.message));
       } catch (e) {
-        emit(state.copyWith(isLoading: false));
-        // Error handling should be implemented here (e.g. Failure state)
+        emit(state.copyWith(isLoading: false, errorMessage: 'An unexpected error occurred.'));
       }
     });
 
     on<SignOutEvent>((event, emit) async {
       await _auth.signOut();
-      emit(state.copyWith(isAuthenticated: false));
+      emit(state.copyWith(isAuthenticated: false, errorMessage: null));
     });
 
     on<CreateAccountEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(isLoading: true, errorMessage: null));
       try {
         final credential = await _auth.createUserWithEmailAndPassword(
           email: event.email,
@@ -77,13 +82,15 @@ class AuthBloc extends Bloc<AuthEvent, local.AuthState> {
         if (credential.user != null) {
           await credential.user!.updateDisplayName(event.name);
         }
+      } on FirebaseAuthException catch (e) {
+        emit(state.copyWith(isLoading: false, errorMessage: e.message));
       } catch (e) {
-        emit(state.copyWith(isLoading: false));
+        emit(state.copyWith(isLoading: false, errorMessage: 'Could not create account.'));
       }
     });
 
     on<DeleteAccountEvent>((event, emit) async {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(isLoading: true, errorMessage: null));
       try {
         await _auth.currentUser?.delete();
         await _storage.deleteAll();
@@ -91,8 +98,10 @@ class AuthBloc extends Bloc<AuthEvent, local.AuthState> {
           isAuthenticated: false,
           isLoading: false,
         ));
+      } on FirebaseAuthException catch (e) {
+        emit(state.copyWith(isLoading: false, errorMessage: e.message));
       } catch (e) {
-        emit(state.copyWith(isLoading: false));
+        emit(state.copyWith(isLoading: false, errorMessage: 'Could not delete account.'));
       }
     });
   }

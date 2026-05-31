@@ -16,20 +16,20 @@ void main() {
       canvasBloc.close();
     });
 
-    test('initial state is manual mode with no layers', () {
-      expect(canvasBloc.state.mode, EditorMode.manual);
+    test('initial state is aiCoPilot mode with no layers', () {
+      expect(canvasBloc.state.mode, EditorMode.aiCoPilot);
       expect(canvasBloc.state.layers, isEmpty);
     });
 
     test('ToggleEditorModeEvent switches modes', () {
       canvasBloc.add(ToggleEditorModeEvent());
-      expectLater(canvasBloc.stream, emits(const CanvasState(mode: EditorMode.aiCoPilot)));
+      expectLater(canvasBloc.stream, emits(const CanvasState(mode: EditorMode.manual)));
     });
 
     test('AddLayerEvent adds a layer', () {
       const layer = CanvasLayer(id: '1', type: LayerType.text, content: 'Hello');
       canvasBloc.add(AddLayerEvent(layer));
-      expectLater(canvasBloc.stream, emits(const CanvasState(layers: [layer])));
+      expectLater(canvasBloc.stream, emits(const CanvasState(layers: [layer], mode: EditorMode.aiCoPilot)));
     });
   });
 }

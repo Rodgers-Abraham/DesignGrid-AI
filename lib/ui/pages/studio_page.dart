@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
 import '../../core/theme/app_colors.dart';
 import '../../logic/canvas/canvas_bloc.dart';
@@ -39,31 +40,30 @@ class _StudioPageState extends State<StudioPage> {
     super.dispose();
   }
 
-  void _handleModeChange(EditorMode mode) {
-    if (mode == EditorMode.aiCoPilot) {
-      final authState = context.read<AuthBloc>().state;
-      if (authState.apiKey == null || authState.apiKey!.isEmpty) {
-        _showApiKeyDialog();
-      }
-    }
-    context.read<CanvasBloc>().add(ToggleEditorModeEvent());
-  }
-
   Future<void> _showApiKeyDialog() async {
-    final controller = TextEditingController();
+    final controller = TextEditingController(text: context.read<AuthBloc>().state.apiKey);
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Gemini API Key Required'),
+        title: const Text('Gemini API Key'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('To use AI Co-pilot features, please enter your Google AI Studio API key.'),
-            const SizedBox(height: 16),
+            const Text('To use AI Co-pilot, you need a Google AI Studio API key.'),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => launchUrl(Uri.parse('https://aistudio.google.com/app/apikey')),
+              child: const Text(
+                'Get your key here →',
+                style: TextStyle(color: AppColors.primaryAmber, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: controller,
               decoration: const InputDecoration(
-                hintText: 'Enter API Key',
+                hintText: 'Paste API Key here',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -76,24 +76,16 @@ class _StudioPageState extends State<StudioPage> {
               if (controller.text.isNotEmpty) {
                 context.read<AuthBloc>().add(UpdateApiKeyLibraryEvent(controller.text));
                 Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('API Key stored securely.')),
+                );
               }
             },
-            child: const Text('Save'),
+            child: const Text('Save Key'),
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _requestImagePermissions() async {
-    final status = await Permission.photos.request();
-    if (status.isDenied) {
-       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gallery permission is required to add images.')),
-        );
-    } else {
-      _addLayer(LayerType.image, 'New Image');
-    }
   }
 
   void _addLayer(LayerType type, String content) {
@@ -120,22 +112,26 @@ class _StudioPageState extends State<StudioPage> {
                     onPressed: () => context.pop(),
                   )
                 : null,
-            title: const Text('Creator Studio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            title: const Text('AI Creator Studio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             centerTitle: true,
             backgroundColor: Colors.transparent,
             elevation: 0,
             actions: [
               IconButton(
+                icon: const Icon(Icons.key_outlined, color: AppColors.primaryAmber),
+                onPressed: _showApiKeyDialog,
+              ),
+              IconButton(
                 icon: const Icon(Icons.save_outlined, color: AppColors.primaryAmber),
                 onPressed: () {
                   if (state.layers.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Add some layers before saving!')),
+                      const SnackBar(content: Text('Generate something before saving!')),
                     );
                     return;
                   }
                   context.read<ProjectsBloc>().add(SaveProjectEvent(
-                        title: 'New Design ${DateTime.now().hour}:${DateTime.now().minute}',
+                        title: 'AI Design ${DateTime.now().hour}:${DateTime.now().minute}',
                         type: _selectedPreset,
                         layers: state.layers.map((l) => l.toMap()).toList(),
                       ));
@@ -144,48 +140,27 @@ class _StudioPageState extends State<StudioPage> {
                   );
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                onPressed: () => context.read<CanvasBloc>().add(ClearCanvasEvent()),
-              ),
             ],
           ),
-          body: Stack(
-            children: [
-              Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Preset Gallery', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 16),
-                        _buildPresetGrid(),
-                        const SizedBox(height: 24),
-                        _buildModeToggle(state.mode),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: state.mode == EditorMode.manual 
-                        ? _buildCanvas(state.layers)
-                        : Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: _buildAiCoPilotSection(),
-                          ),
-                  ),
-                  const SizedBox(height: 120), // Space for footer
-                ],
-              ),
-              Positioned(
-                bottom: 100,
-                left: 0,
-                right: 0,
-                child: _buildEditorFooter(),
-              ),
-            ],
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('1. Select Format', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                _buildPresetGrid(),
+                const SizedBox(height: 24),
+                const Text('2. Design Prompt', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                _buildAiPromptSection(),
+                const SizedBox(height: 24),
+                const Text('3. Preview', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                Expanded(child: _buildCanvas(state.layers)),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         );
       },
@@ -194,7 +169,6 @@ class _StudioPageState extends State<StudioPage> {
 
   Widget _buildCanvas(List<CanvasLayer> layers) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
@@ -210,7 +184,23 @@ class _StudioPageState extends State<StudioPage> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
         child: Stack(
-          children: layers.map((layer) => _buildLayer(layer)).toList(),
+          children: [
+            if (layers.isEmpty)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.auto_awesome_outlined, color: AppColors.primaryAmber.withOpacity(0.2), size: 64),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Your AI design will appear here',
+                      style: TextStyle(color: AppColors.textSecondary.withOpacity(0.5)),
+                    ),
+                  ],
+                ),
+              ),
+            ...layers.map((layer) => _buildLayer(layer)).toList(),
+          ],
         ),
       ),
     );
@@ -276,7 +266,7 @@ class _StudioPageState extends State<StudioPage> {
 
   Widget _buildPresetGrid() {
     return SizedBox(
-      height: 100,
+      height: 90,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -287,9 +277,6 @@ class _StudioPageState extends State<StudioPage> {
           return GestureDetector(
             onTap: () {
               setState(() => _selectedPreset = preset['name']!);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Initialized ${preset['name']} canvas (${preset['ratio']})')),
-              );
             },
             child: Container(
               width: 80,
@@ -336,171 +323,57 @@ class _StudioPageState extends State<StudioPage> {
     );
   }
 
-  Widget _buildModeToggle(EditorMode currentMode) {
+  Widget _buildAiPromptSection() {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    return Container(
-      height: 54,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(27),
-      ),
-      child: Stack(
-        children: [
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-            alignment: currentMode == EditorMode.manual ? Alignment.centerLeft : Alignment.centerRight,
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.42,
-              margin: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: currentMode == EditorMode.manual ? (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)) : AppColors.primaryAmber,
-                borderRadius: BorderRadius.circular(23),
-              ),
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+          ),
+          child: TextField(
+            controller: _promptController,
+            maxLines: 2,
+            decoration: InputDecoration(
+              hintText: 'Describe your design idea...',
+              hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.4), fontSize: 14),
+              border: InputBorder.none,
             ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    if (currentMode != EditorMode.manual) _handleModeChange(EditorMode.manual);
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: Center(
-                    child: Text(
-                      'Manual Editing',
-                      style: TextStyle(
-                        color: currentMode == EditorMode.manual ? (isDark ? Colors.white : Colors.black) : theme.textTheme.bodySmall?.color,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    if (currentMode != EditorMode.aiCoPilot) _handleModeChange(EditorMode.aiCoPilot);
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: Center(
-                    child: Text(
-                      'AI Co-pilot Mode',
-                      style: TextStyle(
-                        color: currentMode == EditorMode.aiCoPilot ? Colors.black : theme.textTheme.bodySmall?.color,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAiCoPilotSection() {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Prompt', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Icon(Icons.add, color: theme.textTheme.bodySmall?.color, size: 20),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
-            ),
-            child: TextField(
-              controller: _promptController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'e.g., Elegant watercolor floral design for a wedding invite',
-                hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.6), fontSize: 14),
-                border: InputBorder.none,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: () {
-                final authState = context.read<AuthBloc>().state;
-                if (authState.apiKey == null || authState.apiKey!.isEmpty) {
-                  _showApiKeyDialog();
-                } else {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Connecting to Gemini...')),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryAmber,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: const Text(
-                'Generate with Gemini',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEditorFooter() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      height: 64,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1C23),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildToolItem(Icons.text_fields, 'Text', onTap: () => _addLayer(LayerType.text, 'New Text')),
-          _buildToolItem(Icons.pentagon_outlined, 'Shapes', onTap: () => _addLayer(LayerType.shape, 'New Shape')),
-          _buildToolItem(Icons.image_outlined, 'Image', onTap: _requestImagePermissions),
-          _buildToolItem(Icons.layers_outlined, 'Layout', onTap: () {}),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToolItem(IconData icon, String label, {VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: SizedBox(
-        width: 60,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 22),
-            const SizedBox(height: 4),
-            Text(label, style: const TextStyle(color: Colors.white, fontSize: 10)),
-          ],
         ),
-      ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              final authState = context.read<AuthBloc>().state;
+              if (authState.apiKey == null || authState.apiKey!.isEmpty) {
+                _showApiKeyDialog();
+              } else {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Gemini is processing your request...')),
+                  );
+                 // Mock generation by adding layers
+                 _addLayer(LayerType.text, _promptController.text.isNotEmpty ? _promptController.text : 'AI Result');
+              }
+            },
+            icon: const Icon(Icons.auto_awesome, color: Colors.black, size: 18),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryAmber,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            label: const Text(
+              'Generate Design',
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

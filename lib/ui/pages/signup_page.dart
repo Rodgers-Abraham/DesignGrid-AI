@@ -34,6 +34,15 @@ class _SignUpPageState extends State<SignUpPage> {
         if (state.isAuthenticated) {
           context.go('/');
         }
+        if (state.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage!),
+              backgroundColor: AppColors.error,
+            ),
+          );
+          context.read<AuthBloc>().add(ClearErrorEvent());
+        }
       },
       child: Scaffold(
         appBar: AppBar(
@@ -41,56 +50,77 @@ class _SignUpPageState extends State<SignUpPage> {
           elevation: 0,
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Center(child: AppLogo(size: 60)),
-                const SizedBox(height: 48),
-                const Text(
-                  'Create Account',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Join our community of elite designers.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
-                ),
-                const SizedBox(height: 48),
-                _buildTextField('Full Name', _nameController, false),
-                const SizedBox(height: 24),
-                _buildTextField('Email', _emailController, false),
-                const SizedBox(height: 24),
-                _buildTextField('Password', _passwordController, true),
-                const SizedBox(height: 48),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<AuthBloc>().add(CreateAccountEvent(
-                        name: _nameController.text,
-                        email: _emailController.text,
-                        password: _passwordController.text,
-                      ));
-                    },
-                    child: const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Already have an account? ", style: TextStyle(color: AppColors.textSecondary)),
-                    GestureDetector(
-                      onTap: () => context.pop(),
-                      child: const Text('Sign In', style: TextStyle(color: AppColors.primaryAmber, fontWeight: FontWeight.bold)),
+                    const Center(child: AppLogo(size: 60)),
+                    const SizedBox(height: 48),
+                    const Text(
+                      'Create Account',
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Join our community of elite designers.',
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                    ),
+                    const SizedBox(height: 48),
+                    _buildTextField('Full Name', _nameController, false),
+                    const SizedBox(height: 24),
+                    _buildTextField('Email', _emailController, false),
+                    const SizedBox(height: 24),
+                    _buildTextField('Password', _passwordController, true),
+                    const SizedBox(height: 48),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: state.isLoading 
+                          ? null 
+                          : () {
+                              final name = _nameController.text.trim();
+                              final email = _emailController.text.trim();
+                              final password = _passwordController.text.trim();
+                              if (name.isNotEmpty && email.isNotEmpty && password.isNotEmpty) {
+                                context.read<AuthBloc>().add(CreateAccountEvent(
+                                      name: name,
+                                      email: email,
+                                      password: password,
+                                    ));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please fill in all fields')),
+                                );
+                              }
+                            },
+                        child: state.isLoading 
+                          ? const SizedBox(
+                              height: 20, 
+                              width: 20, 
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black)
+                            )
+                          : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Already have an account? ", style: TextStyle(color: AppColors.textSecondary)),
+                        GestureDetector(
+                          onTap: () => context.pop(),
+                          child: const Text('Sign In', style: TextStyle(color: AppColors.primaryAmber, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

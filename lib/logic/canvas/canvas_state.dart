@@ -9,7 +9,7 @@ class CanvasState extends Equatable {
 
   const CanvasState({
     this.layers = const [],
-    this.mode = EditorMode.manual,
+    this.mode = EditorMode.aiCoPilot,
   });
 
   CanvasState copyWith({
