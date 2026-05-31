@@ -20,3 +20,12 @@ class SearchProjectsEvent extends ProjectsEvent {
   @override
   List<Object?> get props => [query];
 }
+
+class SaveProjectEvent extends ProjectsEvent {
+  final String title;
+  final String type;
+  final List<Map<String, dynamic>> layers;
+  SaveProjectEvent({required this.title, required this.type, required this.layers});
+  @override
+  List<Object?> get props => [title, type, layers];
+}

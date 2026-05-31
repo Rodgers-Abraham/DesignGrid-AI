@@ -71,5 +71,24 @@ class ProjectsBloc extends Bloc<ProjectsEvent, ProjectsState> {
         // Handle error
       }
     });
+
+    on<SaveProjectEvent>((event, emit) async {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      try {
+        await _firestore.collection('projects').add({
+          'user_id': user.uid,
+          'title': event.title,
+          'type': event.type,
+          'layers': event.layers,
+          'preview_url': '', // Could be updated later with storage
+          'created_at': FieldValue.serverTimestamp(),
+        });
+        add(LoadProjectsEvent()); // Refresh the list after saving
+      } catch (e) {
+        // Handle error
+      }
+    });
   }
 }

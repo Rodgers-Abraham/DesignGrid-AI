@@ -7,6 +7,8 @@ import '../../core/theme/app_colors.dart';
 import '../../logic/canvas/canvas_bloc.dart';
 import '../../logic/canvas/canvas_event.dart';
 import '../../logic/canvas/canvas_state.dart';
+import '../../logic/projects/projects_bloc.dart';
+import '../../logic/projects/projects_event.dart';
 import '../../logic/auth/auth_bloc.dart';
 import '../../logic/auth/auth_event.dart';
 import '../../logic/auth/auth_state.dart';
@@ -123,6 +125,25 @@ class _StudioPageState extends State<StudioPage> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             actions: [
+              IconButton(
+                icon: const Icon(Icons.save_outlined, color: AppColors.primaryAmber),
+                onPressed: () {
+                  if (state.layers.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Add some layers before saving!')),
+                    );
+                    return;
+                  }
+                  context.read<ProjectsBloc>().add(SaveProjectEvent(
+                        title: 'New Design ${DateTime.now().hour}:${DateTime.now().minute}',
+                        type: _selectedPreset,
+                        layers: state.layers.map((l) => l.toMap()).toList(),
+                      ));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Project saved to cloud!')),
+                  );
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: AppColors.error),
                 onPressed: () => context.read<CanvasBloc>().add(ClearCanvasEvent()),

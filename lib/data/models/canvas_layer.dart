@@ -37,4 +37,15 @@ class CanvasLayer extends Equatable {
 
   @override
   List<Object?> get props => [id, type, content, x, y, scale];
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'type': type.name,
+      'content': content,
+      'x': x,
+      'y': y,
+      'scale': scale,
+    };
+  }
 }

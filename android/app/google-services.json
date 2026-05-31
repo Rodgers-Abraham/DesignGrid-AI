@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "54395680658",
+    "project_id": "design-grid-ai",
+    "storage_bucket": "design-grid-ai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:54395680658:android:a4b3fe83083b7655b5734b",
+        "android_client_info": {
+          "package_name": "com.designgrid.designgrid_ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrFtIj6-g7G6-IqHxuNb9ZIde_7EQE4wg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
