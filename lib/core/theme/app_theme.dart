@@ -22,6 +22,7 @@ class AppTheme {
         primary: AppColors.primaryAmber,
         secondary: AppColors.accentAmber,
         surface: AppColors.surface,
+        background: AppColors.background,
         error: AppColors.error,
       ),
       textTheme: _getTextTheme(base).apply(
@@ -30,7 +31,9 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -46,41 +49,6 @@ class AppTheme {
         indicatorColor: AppColors.primaryAmber.withOpacity(0.2),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-        ),
-      ),
-    );
-  }
-
-  static ThemeData get lightTheme {
-    final base = ThemeData.light();
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: AppColors.backgroundLight,
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.primaryAmber,
-        secondary: AppColors.accentAmber,
-        surface: AppColors.surfaceLight,
-        error: AppColors.error,
-      ),
-      textTheme: _getTextTheme(base).apply(
-        bodyColor: AppColors.textPrimaryLight,
-        displayColor: AppColors.textPrimaryLight,
-      ),
-      cardTheme: CardThemeData(
-        color: AppColors.surfaceLight,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryAmber,
-          foregroundColor: Colors.black,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
       ),
     );

@@ -104,6 +104,18 @@ class AuthBloc extends Bloc<AuthEvent, local.AuthState> {
         emit(state.copyWith(isLoading: false, errorMessage: 'Could not delete account.'));
       }
     });
+
+    on<ChangePasswordEvent>((event, emit) async {
+      emit(state.copyWith(isLoading: true, errorMessage: null));
+      try {
+        await _auth.currentUser?.updatePassword(event.newPassword);
+        emit(state.copyWith(isLoading: false));
+      } on FirebaseAuthException catch (e) {
+        emit(state.copyWith(isLoading: false, errorMessage: e.message));
+      } catch (e) {
+        emit(state.copyWith(isLoading: false, errorMessage: 'Could not update password.'));
+      }
+    });
   }
 
   @override

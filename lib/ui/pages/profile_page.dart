@@ -4,9 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_colors.dart';
-import '../../logic/theme/theme_bloc.dart';
-import '../../logic/theme/theme_event.dart';
-import '../../logic/theme/theme_state.dart';
 import '../../logic/auth/auth_bloc.dart';
 import '../../logic/auth/auth_event.dart';
 import '../../logic/auth/auth_state.dart';
@@ -22,6 +19,11 @@ class ProfilePage extends StatelessWidget {
       listener: (context, state) {
         if (!state.isAuthenticated) {
           context.go('/welcome');
+        }
+        if (state.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.errorMessage!), backgroundColor: AppColors.error),
+          );
         }
       },
       child: Scaffold(
@@ -52,7 +54,7 @@ class ProfilePage extends StatelessWidget {
             children: [
               const SizedBox(height: 12),
               _buildSectionHeader('Account'),
-              _buildAccountCard(user),
+              _buildAccountCard(context, user),
               const SizedBox(height: 32),
               _buildSectionHeader('Security'),
               _buildSecurityCard(context),
@@ -81,7 +83,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildAccountCard(User? user) {
+  Widget _buildAccountCard(BuildContext context, User? user) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -94,7 +96,11 @@ class ProfilePage extends StatelessWidget {
           _buildDivider(),
           _buildInfoRow('Name', user?.displayName ?? 'N/A'),
           _buildDivider(),
-          _buildActionRow('Change Password', hasSwitch: true),
+          _buildActionRow(
+            'Change Password', 
+            hasSwitch: false,
+            onTap: () => _showChangePasswordDialog(context),
+          ),
         ],
       ),
     );
@@ -181,20 +187,6 @@ class ProfilePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          BlocBuilder<ThemeBloc, ThemeState>(
-            builder: (context, state) {
-              return _buildActionRow(
-                'Theme Toggle D/L',
-                icon: Icons.dark_mode_outlined,
-                hasSwitch: true,
-                switchValue: state.themeMode == ThemeMode.dark,
-                onChanged: (val) =>
-                    context.read<ThemeBloc>().add(ToggleThemeEvent()),
-                trailingText: 'D/L',
-              );
-            },
-          ),
-          _buildDivider(),
           _buildActionRow(
             'Help Center',
             icon: Icons.help_outline,
@@ -276,6 +268,43 @@ class ProfilePage extends StatelessWidget {
       color: Colors.white.withOpacity(0.05),
       indent: 20,
       endIndent: 20,
+    );
+  }
+
+  Future<void> _showChangePasswordDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Change Password'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          decoration: const InputDecoration(
+            hintText: 'Enter new password',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.length >= 6) {
+                context.read<AuthBloc>().add(ChangePasswordEvent(controller.text));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Password update requested.')),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Password must be at least 6 characters.')),
+                );
+              }
+            },
+            child: const Text('Update'),
+          ),
+        ],
+      ),
     );
   }
 }

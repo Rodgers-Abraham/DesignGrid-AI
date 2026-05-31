@@ -14,10 +14,13 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = GoRouterState.of(context);
+    final bool showNav = state.matchedLocation != '/studio';
+
     return Scaffold(
       body: navigationShell,
       extendBody: true,
-      bottomNavigationBar: _StyledFloatingDock(
+      bottomNavigationBar: showNav ? _StyledFloatingDock(
         currentIndex: navigationShell.currentIndex,
         onTap: (index) {
           if (index == 0) {
@@ -34,7 +37,7 @@ class AppShell extends StatelessWidget {
             context.push('/welcome');
           }
         },
-      ),
+      ) : null,
     );
   }
 }

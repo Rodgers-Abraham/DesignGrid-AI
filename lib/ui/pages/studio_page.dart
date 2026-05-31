@@ -25,6 +25,7 @@ class StudioPage extends StatefulWidget {
 class _StudioPageState extends State<StudioPage> {
   String _selectedPreset = 'Business Cards';
   final TextEditingController _promptController = TextEditingController();
+  bool _hasReferenceImage = false;
 
   final List<Map<String, dynamic>> _presets = [
     {'name': 'Business Cards', 'ratio': '3.5:2', 'icon': Icons.contact_mail_outlined},
@@ -106,12 +107,10 @@ class _StudioPageState extends State<StudioPage> {
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
-            leading: context.canPop()
-                ? IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => context.pop(),
-                  )
-                : null,
+            leading: IconButton(
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () => context.go('/'),
+            ),
             title: const Text('AI Creator Studio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             centerTitle: true,
             backgroundColor: Colors.transparent,
@@ -142,7 +141,8 @@ class _StudioPageState extends State<StudioPage> {
               ),
             ],
           ),
-          body: Padding(
+          body: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,14 +151,18 @@ class _StudioPageState extends State<StudioPage> {
                 const SizedBox(height: 12),
                 _buildPresetGrid(),
                 const SizedBox(height: 24),
-                const Text('2. Design Prompt', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('2. Reference Image (Optional)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                _buildImageUploadSection(),
+                const SizedBox(height: 24),
+                const Text('3. Design Prompt', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
                 _buildAiPromptSection(),
                 const SizedBox(height: 24),
-                const Text('3. Preview', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('4. Preview', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-                Expanded(child: _buildCanvas(state.layers)),
-                const SizedBox(height: 32),
+                _buildCanvas(state.layers),
+                const SizedBox(height: 48),
               ],
             ),
           ),
@@ -167,10 +171,65 @@ class _StudioPageState extends State<StudioPage> {
     );
   }
 
+  Widget _buildImageUploadSection() {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _hasReferenceImage = !_hasReferenceImage);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_hasReferenceImage ? 'Image uploaded!' : 'Image removed.')),
+        );
+      },
+      child: Container(
+        height: 100,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _hasReferenceImage ? AppColors.primaryAmber : Colors.white.withOpacity(0.1),
+            style: BorderStyle.solid,
+            width: 1,
+          ),
+        ),
+        child: _hasReferenceImage
+            ? Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      'https://placeholder.com/600x200',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                      child: const Icon(Icons.refresh, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_photo_alternate_outlined, color: AppColors.textSecondary, size: 32),
+                  const SizedBox(height: 8),
+                  Text('Tap to upload reference image', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                ],
+              ),
+      ),
+    );
+  }
+
   Widget _buildCanvas(List<CanvasLayer> layers) {
     return Container(
+      height: 400,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withOpacity(0.05)),
         boxShadow: [
@@ -286,7 +345,7 @@ class _StudioPageState extends State<StudioPage> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected ? AppColors.primaryAmber : Colors.white.withOpacity(0.05),
@@ -324,23 +383,21 @@ class _StudioPageState extends State<StudioPage> {
   }
 
   Widget _buildAiPromptSection() {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
           child: TextField(
             controller: _promptController,
             maxLines: 2,
             decoration: InputDecoration(
               hintText: 'Describe your design idea...',
-              hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.4), fontSize: 14),
+              hintStyle: TextStyle(color: AppColors.textSecondary.withOpacity(0.4), fontSize: 14),
               border: InputBorder.none,
             ),
           ),
@@ -358,8 +415,7 @@ class _StudioPageState extends State<StudioPage> {
                  ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Gemini is processing your request...')),
                   );
-                 // Mock generation by adding layers
-                 _addLayer(LayerType.text, _promptController.text.isNotEmpty ? _promptController.text : 'AI Result');
+                 _addLayer(LayerType.text, _promptController.text.isNotEmpty ? _promptController.text : 'AI Design Result');
               }
             },
             icon: const Icon(Icons.auto_awesome, color: Colors.black, size: 18),

@@ -53,3 +53,10 @@ class CreateAccountEvent extends AuthEvent {
 }
 
 class DeleteAccountEvent extends AuthEvent {}
+
+class ChangePasswordEvent extends AuthEvent {
+  final String newPassword;
+  ChangePasswordEvent(this.newPassword);
+  @override
+  List<Object?> get props => [newPassword];
+}
