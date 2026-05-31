@@ -39,6 +39,10 @@ To empower designers with an ultra-fluid interface that bridges the gap between 
 - **Typography:** Google Fonts (Inter).
 - **Shapes:** Consistent 12px to 16px corner radii for a modern container-based feel.
 
+## 📁 Asset Management
+- **Logo:** High-fidelity brand assets should be placed in `assets/images/logo/`.
+- **Templates:** Pre-configured design examples and presets are located in `assets/templates/`. These serve as the backbone for the Creator Studio gallery.
+
 ---
 
 ## 🚀 Development Phases

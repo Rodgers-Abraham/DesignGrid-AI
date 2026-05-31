@@ -49,7 +49,7 @@ class WelcomePage extends StatelessWidget {
                 width: double.infinity,
                 height: 60,
                 child: ElevatedButton(
-                  onPressed: () => context.go('/'),
+                  onPressed: () => context.push('/login'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryAmber,
                     foregroundColor: Colors.black,
@@ -63,7 +63,7 @@ class WelcomePage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextButton(
-                onPressed: () {},
+                onPressed: () => context.push('/login'),
                 child: const Text(
                   'Already have an account? Sign In',
                   style: TextStyle(color: AppColors.textSecondary),

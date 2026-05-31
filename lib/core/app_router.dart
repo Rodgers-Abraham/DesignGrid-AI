@@ -5,6 +5,8 @@ import '../ui/pages/studio_page.dart';
 import '../ui/pages/projects_page.dart';
 import '../ui/pages/profile_page.dart';
 import '../ui/pages/welcome_page.dart';
+import '../ui/pages/login_page.dart';
+import '../ui/pages/signup_page.dart';
 import '../ui/pages/help_center_page.dart';
 import '../ui/shell/app_shell.dart';
 
@@ -13,11 +15,19 @@ class AppRouter {
   
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/welcome', // Start at welcome for new session
+    initialLocation: '/welcome',
     routes: [
       GoRoute(
         path: '/welcome',
         builder: (context, state) => const WelcomePage(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignUpPage(),
       ),
       GoRoute(
         path: '/help',

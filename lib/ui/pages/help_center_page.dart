@@ -28,6 +28,10 @@ class HelpCenterPage extends StatelessWidget {
             'How to save, export, and delete your design drafts.',
           ),
           _buildHelpItem(
+            'Templates & Examples',
+            'You can find pre-built design templates in the "assets/templates" folder of the project repository. These can be used to jumpstart your creative process.',
+          ),
+          _buildHelpItem(
             'Billing & PRO',
             'Information about the premium features and subscription.',
           ),
