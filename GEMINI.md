@@ -51,3 +51,10 @@ DesignGrid.AI is a fluid, multi-platform application designed for a premium desi
 - Established `assets/` directory structure for logo and templates.
 - Implemented high-fidelity `LoginPage` and `SignUpPage`.
 - Integrated full auth flow with `AuthBloc` and `GoRouter`.
+
+### Phase 8: Deep Refinement & Canvas Functionality ✅
+- Implemented functional Canvas Editor in Studio Page with layer dragging.
+- Fixed Light Mode UI inconsistencies in floating dock and cards.
+- Wired up account creation and deletion logic.
+- Robust local session persistence.
+

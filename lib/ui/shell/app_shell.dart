@@ -37,19 +37,22 @@ class _StyledFloatingDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),
       height: 72,
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1C23).withOpacity(0.9),
+        color: theme.colorScheme.surface.withOpacity(0.9),
         borderRadius: BorderRadius.circular(36),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withOpacity(isDark ? 0.4 : 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -109,7 +112,12 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppColors.primaryAmber : AppColors.textSecondary;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final activeColor = AppColors.primaryAmber;
+    final inactiveColor = isDark ? AppColors.textSecondary : AppColors.textSecondaryLight;
+    
+    final color = isActive ? activeColor : inactiveColor;
     
     return GestureDetector(
       onTap: onTap,
@@ -121,7 +129,7 @@ class _NavItem extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryAmber.withOpacity(0.1) : Colors.transparent,
+              color: isActive ? activeColor.withOpacity(0.1) : Colors.transparent,
               shape: BoxShape.circle,
             ),
             child: Icon(

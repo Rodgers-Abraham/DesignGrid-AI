@@ -122,8 +122,23 @@ class ProfilePage extends StatelessWidget {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Account deletion requested. Verification email sent.')),
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Account'),
+                    content: const Text('Are you sure you want to permanently delete your account and all design data? This action cannot be undone.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<AuthBloc>().add(DeleteAccountEvent());
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                        child: const Text('Delete', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(

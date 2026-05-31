@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:math' as math;
 import '../../core/theme/app_colors.dart';
 import '../../logic/canvas/canvas_bloc.dart';
 import '../../logic/canvas/canvas_event.dart';
@@ -9,6 +10,7 @@ import '../../logic/canvas/canvas_state.dart';
 import '../../logic/auth/auth_bloc.dart';
 import '../../logic/auth/auth_event.dart';
 import '../../logic/auth/auth_state.dart';
+import '../../data/models/canvas_layer.dart';
 
 class StudioPage extends StatefulWidget {
   const StudioPage({super.key});
@@ -87,7 +89,21 @@ class _StudioPageState extends State<StudioPage> {
        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Gallery permission is required to add images.')),
         );
+    } else {
+      _addLayer(LayerType.image, 'New Image');
     }
+  }
+
+  void _addLayer(LayerType type, String content) {
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final newLayer = CanvasLayer(
+      id: id,
+      type: type,
+      content: content,
+      x: 100.0 + (math.Random().nextDouble() * 50),
+      y: 100.0 + (math.Random().nextDouble() * 50),
+    );
+    context.read<CanvasBloc>().add(AddLayerEvent(newLayer));
   }
 
   @override
@@ -106,28 +122,44 @@ class _StudioPageState extends State<StudioPage> {
             centerTitle: true,
             backgroundColor: Colors.transparent,
             elevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                onPressed: () => context.read<CanvasBloc>().add(ClearCanvasEvent()),
+              ),
+            ],
           ),
           body: Stack(
             children: [
-              SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Preset Gallery', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    _buildPresetGrid(),
-                    const SizedBox(height: 32),
-                    _buildModeToggle(state.mode),
-                    const SizedBox(height: 32),
-                    if (state.mode == EditorMode.aiCoPilot) _buildAiCoPilotSection() else _buildManualEditorPlaceholder(),
-                    const SizedBox(height: 120), // Space for footer
-                  ],
-                ),
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Preset Gallery', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 16),
+                        _buildPresetGrid(),
+                        const SizedBox(height: 24),
+                        _buildModeToggle(state.mode),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: state.mode == EditorMode.manual 
+                        ? _buildCanvas(state.layers)
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: _buildAiCoPilotSection(),
+                          ),
+                  ),
+                  const SizedBox(height: 120), // Space for footer
+                ],
               ),
               Positioned(
-                bottom: 100, // Adjusted to be above the bottom nav
+                bottom: 100,
                 left: 0,
                 right: 0,
                 child: _buildEditorFooter(),
@@ -139,66 +171,147 @@ class _StudioPageState extends State<StudioPage> {
     );
   }
 
-  Widget _buildPresetGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.8,
+  Widget _buildCanvas(List<CanvasLayer> layers) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      itemCount: _presets.length,
-      itemBuilder: (context, index) {
-        final preset = _presets[index];
-        final isSelected = _selectedPreset == preset['name'];
-        return GestureDetector(
-          onTap: () {
-            setState(() => _selectedPreset = preset['name']!);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Initialized ${preset['name']} canvas (${preset['ratio']})')),
-            );
-          },
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primaryAmber : Colors.white.withOpacity(0.05),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      preset['icon'],
-                      color: isSelected ? AppColors.primaryAmber : AppColors.textSecondary,
-                      size: 28,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                preset['name'],
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isSelected ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black) : Theme.of(context).textTheme.bodySmall?.color,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Text(
-                '(${preset['ratio']})',
-                style: TextStyle(fontSize: 9, color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6)),
-              ),
-            ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: layers.map((layer) => _buildLayer(layer)).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLayer(CanvasLayer layer) {
+    return Positioned(
+      left: layer.x,
+      top: layer.y,
+      child: GestureDetector(
+        onPanUpdate: (details) {
+          final updatedLayer = layer.copyWith(
+            x: layer.x + details.delta.dx,
+            y: layer.y + details.delta.dy,
+          );
+          context.read<CanvasBloc>().add(UpdateLayerEvent(updatedLayer));
+        },
+        child: _renderLayerContent(layer),
+      ),
+    );
+  }
+
+  Widget _renderLayerContent(CanvasLayer layer) {
+    switch (layer.type) {
+      case LayerType.text:
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.primaryAmber.withOpacity(0.3)),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            layer.content,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         );
-      },
+      case LayerType.shape:
+        return Container(
+          width: 80 * layer.scale,
+          height: 80 * layer.scale,
+          decoration: BoxDecoration(
+            color: AppColors.primaryAmber.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.star, color: AppColors.primaryAmber),
+        );
+      case LayerType.image:
+        return Container(
+          width: 120 * layer.scale,
+          height: 90 * layer.scale,
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+            image: const DecorationImage(
+              image: NetworkImage('https://placeholder.com/120x90'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: const Center(child: Icon(Icons.image_outlined)),
+        );
+    }
+  }
+
+  Widget _buildPresetGrid() {
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: _presets.length,
+        itemBuilder: (context, index) {
+          final preset = _presets[index];
+          final isSelected = _selectedPreset == preset['name'];
+          return GestureDetector(
+            onTap: () {
+              setState(() => _selectedPreset = preset['name']!);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Initialized ${preset['name']} canvas (${preset['ratio']})')),
+              );
+            },
+            child: Container(
+              width: 80,
+              margin: const EdgeInsets.only(right: 12),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primaryAmber : Colors.white.withOpacity(0.05),
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          preset['icon'],
+                          color: isSelected ? AppColors.primaryAmber : AppColors.textSecondary,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    preset['name'],
+                    style: TextStyle(
+                      fontSize: 8,
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -218,7 +331,7 @@ class _StudioPageState extends State<StudioPage> {
             curve: Curves.easeInOut,
             alignment: currentMode == EditorMode.manual ? Alignment.centerLeft : Alignment.centerRight,
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.44,
+              width: MediaQuery.of(context).size.width * 0.42,
               margin: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: currentMode == EditorMode.manual ? (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)) : AppColors.primaryAmber,
@@ -272,84 +385,61 @@ class _StudioPageState extends State<StudioPage> {
   Widget _buildAiCoPilotSection() {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Prompt', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Icon(Icons.add, color: theme.textTheme.bodySmall?.color, size: 20),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Prompt', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Icon(Icons.add, color: theme.textTheme.bodySmall?.color, size: 20),
+            ],
           ),
-          child: TextField(
-            controller: _promptController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: 'e.g., Elegant watercolor floral design for a wedding invite',
-              hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.6), fontSize: 14),
-              border: InputBorder.none,
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
             ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: () {
-              final authState = context.read<AuthBloc>().state;
-              if (authState.apiKey == null || authState.apiKey!.isEmpty) {
-                _showApiKeyDialog();
-              } else {
-                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Connecting to Gemini...')),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryAmber,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-            child: const Text(
-              'Generate with Gemini',
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+            child: TextField(
+              controller: _promptController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'e.g., Elegant watercolor floral design for a wedding invite',
+                hintStyle: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.6), fontSize: 14),
+                border: InputBorder.none,
+              ),
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildManualEditorPlaceholder() {
-    return Container(
-      height: 200,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.gesture, color: AppColors.primaryAmber.withOpacity(0.5), size: 48),
-            const SizedBox(height: 12),
-            Text(
-              'Interactive Canvas Active',
-              style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: () {
+                final authState = context.read<AuthBloc>().state;
+                if (authState.apiKey == null || authState.apiKey!.isEmpty) {
+                  _showApiKeyDialog();
+                } else {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Connecting to Gemini...')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryAmber,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: const Text(
+                'Generate with Gemini',
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -366,8 +456,8 @@ class _StudioPageState extends State<StudioPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildToolItem(Icons.text_fields, 'Text', onTap: () {}),
-          _buildToolItem(Icons.pentagon_outlined, 'Shapes', onTap: () {}),
+          _buildToolItem(Icons.text_fields, 'Text', onTap: () => _addLayer(LayerType.text, 'New Text')),
+          _buildToolItem(Icons.pentagon_outlined, 'Shapes', onTap: () => _addLayer(LayerType.shape, 'New Shape')),
           _buildToolItem(Icons.image_outlined, 'Image', onTap: _requestImagePermissions),
           _buildToolItem(Icons.layers_outlined, 'Layout', onTap: () {}),
         ],

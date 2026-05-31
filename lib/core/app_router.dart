@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../ui/pages/home_page.dart';
 import '../ui/pages/studio_page.dart';
 import '../ui/pages/projects_page.dart';
@@ -9,13 +10,31 @@ import '../ui/pages/login_page.dart';
 import '../ui/pages/signup_page.dart';
 import '../ui/pages/help_center_page.dart';
 import '../ui/shell/app_shell.dart';
+import '../logic/auth/auth_bloc.dart';
 
 class AppRouter {
   static final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
   
-  static final GoRouter router = GoRouter(
+  static GoRouter router(AuthBloc authBloc) => GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/welcome',
+    initialLocation: '/',
+    refreshListenable: _BlocRefreshListenable(authBloc),
+    redirect: (context, state) {
+      final isAuthenticated = authBloc.state.isAuthenticated;
+      final isLoggingIn = state.matchedLocation == '/login' || 
+                          state.matchedLocation == '/signup' || 
+                          state.matchedLocation == '/welcome';
+
+      if (!isAuthenticated) {
+        return isLoggingIn ? null : '/welcome';
+      }
+
+      if (isLoggingIn) {
+        return '/';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/welcome',
@@ -74,4 +93,18 @@ class AppRouter {
       ),
     ],
   );
+}
+
+class _BlocRefreshListenable extends ChangeNotifier {
+  _BlocRefreshListenable(Bloc bloc) {
+    _subscription = bloc.stream.listen((_) => notifyListeners());
+  }
+
+  late final dynamic _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
 }
