@@ -1,76 +1,75 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'projects_event.dart';
 import 'projects_state.dart';
 import '../../data/models/project.dart';
 
 class ProjectsBloc extends Bloc<ProjectsEvent, ProjectsState> {
-  List<Project> _allProjects = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   ProjectsBloc() : super(const ProjectsState()) {
     on<LoadProjectsEvent>((event, emit) async {
+      final user = _auth.currentUser;
+      if (user == null) {
+        emit(const ProjectsState(projects: [], saved: [], drafts: []));
+        return;
+      }
+
       emit(state.copyWith(isLoading: true));
       
-      // Simulating loading from local DB
-      final mockProjects = [
-        Project(
-          id: '1',
-          title: 'Birthday Invite',
-          type: 'Preset Type',
-          previewUrl: '',
-          createdAt: DateTime.now(),
-        ),
-        Project(
-          id: '2',
-          title: 'Event Poster',
-          type: 'Preset Type',
-          previewUrl: '',
-          createdAt: DateTime.now(),
-        ),
-      ];
-      
-      _allProjects = mockProjects;
-      
-      emit(state.copyWith(
-        projects: _allProjects,
-        saved: [_allProjects.first],
-        drafts: [_allProjects.last],
-        isLoading: false,
-      ));
+      try {
+        final snapshot = await _firestore
+            .collection('projects')
+            .where('user_id', isEqualTo: user.uid)
+            .orderBy('created_at', descending: true)
+            .get();
+
+        final projects = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return Project(
+            id: doc.id,
+            title: data['title'] ?? 'Untitled',
+            type: data['type'] ?? 'Custom',
+            previewUrl: data['preview_url'] ?? '',
+            createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          );
+        }).toList();
+        
+        emit(state.copyWith(
+          projects: projects,
+          saved: projects.take(1).toList(), // Example logic
+          drafts: projects.skip(1).toList(),
+          isLoading: false,
+        ));
+      } catch (e) {
+        emit(state.copyWith(isLoading: false));
+      }
     });
 
     on<SearchProjectsEvent>((event, emit) {
       if (event.query.isEmpty) {
-        emit(state.copyWith(
-          projects: _allProjects,
-          saved: _allProjects.where((p) => p.id == '1').toList(),
-          drafts: _allProjects.where((p) => p.id == '2').toList(),
-        ));
+        add(LoadProjectsEvent());
         return;
       }
 
-      final filtered = _allProjects.where((p) {
+      final filtered = state.projects.where((p) {
         return p.title.toLowerCase().contains(event.query.toLowerCase());
       }).toList();
 
       emit(state.copyWith(
         projects: filtered,
-        saved: filtered.where((p) => p.id == '1').toList(),
-        drafts: filtered.where((p) => p.id == '2').toList(),
       ));
     });
 
-    on<DeleteProjectEvent>((event, emit) {
-      _allProjects.removeWhere((p) => p.id == event.projectId);
-      
-      final updatedProjects = state.projects.where((p) => p.id != event.projectId).toList();
-      final updatedSaved = state.saved.where((p) => p.id != event.projectId).toList();
-      final updatedDrafts = state.drafts.where((p) => p.id != event.projectId).toList();
-      
-      emit(state.copyWith(
-        projects: updatedProjects,
-        saved: updatedSaved,
-        drafts: updatedDrafts,
-      ));
+    on<DeleteProjectEvent>((event, emit) async {
+      try {
+        await _firestore.collection('projects').doc(event.projectId).delete();
+        add(LoadProjectsEvent()); // Refresh list
+      } catch (e) {
+        // Handle error
+      }
     });
   }
 }

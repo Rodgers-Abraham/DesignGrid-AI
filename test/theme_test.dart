@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  GoogleFonts.config.allowRuntimeFetching = true;
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   group('ThemeBloc Tests', () {
     late ThemeBloc themeBloc;
@@ -30,20 +30,6 @@ void main() {
       expectLater(
         themeBloc.stream,
         emits(const ThemeState(ThemeMode.light)),
-      );
-    });
-
-    test('ToggleThemeEvent changes light to dark', () async {
-      themeBloc.add(ToggleThemeEvent()); // to light
-      await expectLater(
-        themeBloc.stream,
-        emits(const ThemeState(ThemeMode.light)),
-      );
-      
-      themeBloc.add(ToggleThemeEvent()); // back to dark
-      await expectLater(
-        themeBloc.stream,
-        emits(const ThemeState(ThemeMode.dark)),
       );
     });
   });

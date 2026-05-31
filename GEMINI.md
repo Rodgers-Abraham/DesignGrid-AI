@@ -58,3 +58,11 @@ DesignGrid.AI is a fluid, multi-platform application designed for a premium desi
 - Wired up account creation and deletion logic.
 - Robust local session persistence.
 
+### Phase 9: Backend Pivot - Migration to Firebase ✅
+- Migrated from Supabase to **Firebase (Firestore & Auth)**.
+- Integrated Cloud Firestore for project persistence and real-time syncing.
+- Implemented Firebase Authentication with session management.
+- Created `FIREBASE_SETUP.md` with configuration and security rules.
+
+
+

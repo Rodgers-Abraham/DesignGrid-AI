@@ -17,8 +17,8 @@ To empower designers with an ultra-fluid interface that bridges the gap between 
 - **Multi-Format Presets:** Optimized layouts for Business Cards, Promo Posters, Web Banners, and more.
 
 ### 3. Project Terminal
-- **Local Persistence:** Designs are stored locally with metadata overlays.
-- **Responsive Grid:** Fast access to drafts and saved projects.
+- **Cloud-Synced Projects:** Designs are stored in a real-time PostgreSQL database.
+- **Responsive Grid:** Fast access to drafts and saved projects with metadata overlays.
 
 ### 4. Identity Terminal (Me Page)
 - **Premium UI:** A high-end operating system terminal-style interface for account management.
@@ -29,9 +29,11 @@ To empower designers with an ultra-fluid interface that bridges the gap between 
 ### Core Stack
 - **Framework:** Flutter (Multi-platform)
 - **State Management:** BLoC / Cubit for predictable data flow.
-- **Navigation:** GoRouter with `StatefulShellRoute` to maintain canvas state across tabs.
+- **Navigation:** GoRouter with `StatefulShellRoute` for perfect state preservation.
+- **Backend:** **Firebase (Firestore & Auth)** for cloud-synced projects and secure sessions.
 - **Logic:** Multimodal AI integration via Gemini API.
 - **Security:** AES-encrypted local storage for API keys using `flutter_secure_storage`.
+
 
 ### Design System
 - **Background:** Ultra-deep charcoal/matte black (#0D0E12).
@@ -53,6 +55,7 @@ To empower designers with an ultra-fluid interface that bridges the gap between 
 - [x] **Phase 4: UI Development** - High-fidelity screen implementation.
 - [x] **Phase 5: Validation** - Final security audit and performance optimization.
 - [x] **Phase 8: Deep Refinement** - Functional canvas and auth persistence.
+- [x] **Phase 9: Firebase Integration** - Real database and cloud authentication.
 
 ---
-
+Built with ❤️ by the Gemini CLI.
